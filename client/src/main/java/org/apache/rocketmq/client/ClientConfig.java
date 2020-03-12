@@ -34,6 +34,20 @@ import org.apache.rocketmq.remoting.protocol.LanguageCode;
  */
 public class ClientConfig {
     public static final String SEND_MESSAGE_WITH_VIP_CHANNEL_PROPERTY = "com.rocketmq.sendMessageWithVIPChannel";
+
+    /**
+     * namesrvAddr获取方式：
+     * 优先级由高到低：
+     * 1、代码中显式指定 producer.setNamesrvAddr("");
+     * 2、启动参数中指定 -Drocketmq.namesrv.addr=
+     * 3、环境变量中指定 export NAMESRV_ADDR=
+     * 4、http静态服务器寻址 默认为http://jmenv.tbsite.net:8080/rocketmq/nsaddr
+     *  可以通过启动参数修改指定：
+     *  -Drocketmq.namesrv.domain=localhost
+     * -Drocketmq.namesrv.domain.subgroup=nameServer
+     * 返回分号分割的IP和端口 详见org.apache.rocketmq.common.MixAll#getWSAddr()
+     *
+     */
     private String namesrvAddr = NameServerAddressUtils.getNameServerAddresses();
     private String clientIP = RemotingUtil.getLocalAddress();
     private String instanceName = System.getProperty("rocketmq.client.name", "DEFAULT");
@@ -42,6 +56,7 @@ public class ClientConfig {
     protected AccessChannel accessChannel = AccessChannel.LOCAL;
 
     /**
+     * 从NameServer更新topic信息的频率
      * Pulling topic information interval from the named server
      */
     private int pollNameServerInterval = 1000 * 30;

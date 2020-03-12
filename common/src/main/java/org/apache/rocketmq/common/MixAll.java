@@ -93,10 +93,19 @@ public class MixAll {
     public static final String REPLY_MESSAGE_FLAG = "reply";
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.COMMON_LOGGER_NAME);
 
+    /**
+     * 构造http静态服务器寻址的地址，返回
+     *
+     * @return
+     */
     public static String getWSAddr() {
+        //从启动参数中获取rocketmq.namesrv.domain，默认为jmenv.tbsite.net
         String wsDomainName = System.getProperty("rocketmq.namesrv.domain", DEFAULT_NAMESRV_ADDR_LOOKUP);
+        //从启动参数中获取rocketmq.namesrv.domain.subgroup，默认为
         String wsDomainSubgroup = System.getProperty("rocketmq.namesrv.domain.subgroup", "nsaddr");
+        //http地址,默认为http://jmenv.tbsite.net:8080/rocketmq/nsaddr
         String wsAddr = "http://" + wsDomainName + ":8080/rocketmq/" + wsDomainSubgroup;
+        //如果domain带了端口则不需要8080
         if (wsDomainName.indexOf(":") > 0) {
             wsAddr = "http://" + wsDomainName + "/rocketmq/" + wsDomainSubgroup;
         }

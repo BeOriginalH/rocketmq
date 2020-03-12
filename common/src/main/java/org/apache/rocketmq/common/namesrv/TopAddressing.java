@@ -64,12 +64,20 @@ public class TopAddressing {
         return fetchNSAddr(true, 3000);
     }
 
+    /**
+     * 获取namesrvAddr
+     *
+     * @param verbose
+     * @param timeoutMills
+     * @return
+     */
     public final String fetchNSAddr(boolean verbose, long timeoutMills) {
         String url = this.wsAddr;
         try {
             if (!UtilAll.isBlank(this.unitName)) {
                 url = url + "-" + this.unitName + "?nofix=1";
             }
+            //访问请求
             HttpTinyClient.HttpResult result = HttpTinyClient.httpGet(url, null, null, "UTF-8", timeoutMills);
             if (200 == result.code) {
                 String responseStr = result.content;
@@ -87,6 +95,7 @@ public class TopAddressing {
             }
         }
 
+        //日志打印
         if (verbose) {
             String errorMsg =
                 "connect to " + url + " failed, maybe the domain name " + MixAll.getWSAddr() + " not bind in /etc/hosts";
