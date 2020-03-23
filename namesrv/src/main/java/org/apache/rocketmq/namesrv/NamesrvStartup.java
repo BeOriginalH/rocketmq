@@ -19,12 +19,14 @@ package org.apache.rocketmq.namesrv;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
+
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 import java.util.concurrent.Callable;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
@@ -41,22 +43,30 @@ import org.apache.rocketmq.srvutil.ServerUtil;
 import org.apache.rocketmq.srvutil.ShutdownHookThread;
 import org.slf4j.LoggerFactory;
 
-public class NamesrvStartup {
+/**
+ * namesrv启动类
+ */
+public class NamesrvStartup{
 
     private static InternalLogger log;
+
     private static Properties properties = null;
+
     private static CommandLine commandLine = null;
 
     public static void main(String[] args) {
+
         main0(args);
     }
 
     public static NamesrvController main0(String[] args) {
 
         try {
+            //创建启动控制类
             NamesrvController controller = createNamesrvController(args);
             start(controller);
-            String tip = "The Name Server boot success. serializeType=" + RemotingCommand.getSerializeTypeConfigInThisServer();
+            String tip =
+                "The Name Server boot success. serializeType=" + RemotingCommand.getSerializeTypeConfigInThisServer();
             log.info(tip);
             System.out.printf("%s%n", tip);
             return controller;
@@ -69,9 +79,12 @@ public class NamesrvStartup {
     }
 
     public static NamesrvController createNamesrvController(String[] args) throws IOException, JoranException {
+
+        //设置远程调用的版本
         System.setProperty(RemotingCommand.REMOTING_VERSION_KEY, Integer.toString(MQVersion.CURRENT_VERSION));
         //PackageConflictDetect.detectFastjson();
 
+        //获取启动参数选项
         Options options = ServerUtil.buildCommandlineOptions(new Options());
         commandLine = ServerUtil.parseCmdLine("mqnamesrv", args, buildCommandlineOptions(options), new PosixParser());
         if (null == commandLine) {
@@ -82,7 +95,7 @@ public class NamesrvStartup {
         final NamesrvConfig namesrvConfig = new NamesrvConfig();
         final NettyServerConfig nettyServerConfig = new NettyServerConfig();
         nettyServerConfig.setListenPort(9876);
-        if (commandLine.hasOption('c')) {
+        if (commandLine.hasOption('c')) {//如果存在-c参数指定配置文件，读取配置文件
             String file = commandLine.getOptionValue('c');
             if (file != null) {
                 InputStream in = new BufferedInputStream(new FileInputStream(file));
@@ -98,7 +111,7 @@ public class NamesrvStartup {
             }
         }
 
-        if (commandLine.hasOption('p')) {
+        if (commandLine.hasOption('p')) {//如果有-p打印参数，打印所有的配置信息，并退出
             InternalLogger console = InternalLoggerFactory.getLogger(LoggerName.NAMESRV_CONSOLE_NAME);
             MixAll.printObjectProperties(console, namesrvConfig);
             MixAll.printObjectProperties(console, nettyServerConfig);
@@ -108,7 +121,9 @@ public class NamesrvStartup {
         MixAll.properties2Object(ServerUtil.commandLine2Properties(commandLine), namesrvConfig);
 
         if (null == namesrvConfig.getRocketmqHome()) {
-            System.out.printf("Please set the %s variable in your environment to match the location of the RocketMQ installation%n", MixAll.ROCKETMQ_HOME_ENV);
+            System.out.printf(
+                "Please set the %s variable in your environment to match the location of the RocketMQ installation%n",
+                MixAll.ROCKETMQ_HOME_ENV);
             System.exit(-2);
         }
 
@@ -143,9 +158,11 @@ public class NamesrvStartup {
             System.exit(-3);
         }
 
-        Runtime.getRuntime().addShutdownHook(new ShutdownHookThread(log, new Callable<Void>() {
+        Runtime.getRuntime().addShutdownHook(new ShutdownHookThread(log, new Callable<Void>(){
+
             @Override
             public Void call() throws Exception {
+
                 controller.shutdown();
                 return null;
             }
@@ -157,10 +174,19 @@ public class NamesrvStartup {
     }
 
     public static void shutdown(final NamesrvController controller) {
+
         controller.shutdown();
     }
 
+    /**
+     * 构建 -c -p 参数
+     * -c:指定配置文件
+     * -p:打印所有的参数
+     * @param options
+     * @return
+     */
     public static Options buildCommandlineOptions(final Options options) {
+
         Option opt = new Option("c", "configFile", true, "Name server config properties file");
         opt.setRequired(false);
         options.addOption(opt);
@@ -173,6 +199,7 @@ public class NamesrvStartup {
     }
 
     public static Properties getProperties() {
+
         return properties;
     }
 }
