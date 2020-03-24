@@ -64,6 +64,7 @@ public class NamesrvStartup{
         try {
             //创建启动控制类
             NamesrvController controller = createNamesrvController(args);
+            //启动
             start(controller);
             String tip =
                 "The Name Server boot success. serializeType=" + RemotingCommand.getSerializeTypeConfigInThisServer();
@@ -152,12 +153,14 @@ public class NamesrvStartup{
             throw new IllegalArgumentException("NamesrvController is null");
         }
 
+        //初始化控制器
         boolean initResult = controller.initialize();
         if (!initResult) {
             controller.shutdown();
             System.exit(-3);
         }
 
+        //添加钩子函数
         Runtime.getRuntime().addShutdownHook(new ShutdownHookThread(log, new Callable<Void>(){
 
             @Override
