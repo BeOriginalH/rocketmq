@@ -295,6 +295,17 @@ public class BrokerOuterAPI {
         throw new MQBrokerException(response.getCode(), response.getRemark());
     }
 
+    /**
+     * 是否需要注册
+     *
+     * @param clusterName
+     * @param brokerAddr
+     * @param brokerName
+     * @param brokerId
+     * @param topicConfigWrapper
+     * @param timeoutMills
+     * @return
+     */
     public List<Boolean> needRegister(
         final String clusterName,
         final String brokerAddr,
@@ -302,8 +313,12 @@ public class BrokerOuterAPI {
         final long brokerId,
         final TopicConfigSerializeWrapper topicConfigWrapper,
         final int timeoutMills) {
+
         final List<Boolean> changedList = new CopyOnWriteArrayList<>();
+
+        //获取namesrv地址列表
         List<String> nameServerAddressList = this.remotingClient.getNameServerAddressList();
+
         if (nameServerAddressList != null && nameServerAddressList.size() > 0) {
             final CountDownLatch countDownLatch = new CountDownLatch(nameServerAddressList.size());
             for (final String namesrvAddr : nameServerAddressList) {
