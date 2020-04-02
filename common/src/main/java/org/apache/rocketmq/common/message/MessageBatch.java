@@ -22,9 +22,16 @@ import java.util.Iterator;
 import java.util.List;
 import org.apache.rocketmq.common.MixAll;
 
+/**
+ * 批量消息
+ */
 public class MessageBatch extends Message implements Iterable<Message> {
 
     private static final long serialVersionUID = 621335151046335557L;
+
+    /**
+     * 保存每一个消息
+     */
     private final List<Message> messages;
 
     private MessageBatch(List<Message> messages) {
@@ -45,19 +52,19 @@ public class MessageBatch extends Message implements Iterable<Message> {
         List<Message> messageList = new ArrayList<Message>(messages.size());
         Message first = null;
         for (Message message : messages) {
-            if (message.getDelayTimeLevel() > 0) {
+            if (message.getDelayTimeLevel() > 0) {//延迟消息不能批量发送
                 throw new UnsupportedOperationException("TimeDelayLevel is not supported for batching");
             }
-            if (message.getTopic().startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX)) {
+            if (message.getTopic().startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX)) {//重试消息不能批量发送
                 throw new UnsupportedOperationException("Retry Group is not supported for batching");
             }
             if (first == null) {
                 first = message;
             } else {
-                if (!first.getTopic().equals(message.getTopic())) {
+                if (!first.getTopic().equals(message.getTopic())) {//批量消息主题必须一致
                     throw new UnsupportedOperationException("The topic of the messages in one batch should be the same");
                 }
-                if (first.isWaitStoreMsgOK() != message.isWaitStoreMsgOK()) {
+                if (first.isWaitStoreMsgOK() != message.isWaitStoreMsgOK()) {//批量消息消息确认属性必须一致
                     throw new UnsupportedOperationException("The waitStoreMsgOK of the messages in one batch should the same");
                 }
             }

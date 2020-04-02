@@ -474,7 +474,7 @@ public class MQClientAPIImpl{
         RemotingCommand request = null;
         String msgType = msg.getProperty(MessageConst.PROPERTY_MESSAGE_TYPE);
         boolean isReply = msgType != null && msgType.equals(MixAll.REPLY_MESSAGE_FLAG);
-        if (isReply) {
+        if (isReply) {//重试消息
             if (sendSmartMsg) {
                 SendMessageRequestHeaderV2 requestHeaderV2 = SendMessageRequestHeaderV2
                     .createSendMessageRequestHeaderV2(requestHeader);
@@ -508,7 +508,7 @@ public class MQClientAPIImpl{
                 this.sendMessageAsync(addr, brokerName, msg, timeoutMillis - costTimeAsync, request, sendCallback,
                     topicPublishInfo, instance, retryTimesWhenSendFailed, times, context, producer);
                 return null;
-            case SYNC:
+            case SYNC://同步发送
                 long costTimeSync = System.currentTimeMillis() - beginStartTime;
                 if (timeoutMillis < costTimeSync) {
                     throw new RemotingTooMuchRequestException("sendMessage call timeout");
