@@ -23,11 +23,31 @@ import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.common.protocol.route.QueueData;
 import org.apache.rocketmq.common.protocol.route.TopicRouteData;
 
+/**
+ * 主题发布信息
+ */
 public class TopicPublishInfo {
+    /**
+     * 是否是顺序消息
+     */
     private boolean orderTopic = false;
+    /**
+     * 是否有主题路由信息
+     */
     private boolean haveTopicRouterInfo = false;
+    /**
+     * 该主题的消息队列
+     */
     private List<MessageQueue> messageQueueList = new ArrayList<MessageQueue>();
+
+    /**
+     * 队列选择指示器，每选择一次队列，该值会自增1，到达int的最大值后，重置为0
+     */
     private volatile ThreadLocalIndex sendWhichQueue = new ThreadLocalIndex();
+
+    /**
+     * 主题路由信息
+     */
     private TopicRouteData topicRouteData;
 
     public boolean isOrderTopic() {
@@ -84,6 +104,10 @@ public class TopicPublishInfo {
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public MessageQueue selectOneMessageQueue() {
         int index = this.sendWhichQueue.getAndIncrement();
         int pos = Math.abs(index) % this.messageQueueList.size();

@@ -22,6 +22,7 @@ import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.rocketmq.client.common.ThreadLocalIndex;
 
 public class LatencyFaultToleranceImpl implements LatencyFaultTolerance<String> {
@@ -29,10 +30,18 @@ public class LatencyFaultToleranceImpl implements LatencyFaultTolerance<String> 
 
     private final ThreadLocalIndex whichItemWorst = new ThreadLocalIndex();
 
+
+    /**
+     * 更新失败条目
+     *
+     * @param name                 broker名称
+     * @param currentLatency       消息发送故障延迟时间
+     * @param notAvailableDuration 不可用持续时长，在这个时间内，broker将会被规避
+     */
     @Override
     public void updateFaultItem(final String name, final long currentLatency, final long notAvailableDuration) {
         FaultItem old = this.faultItemTable.get(name);
-        if (null == old) {
+        if (null == old) {//broker不存在，则新增到失败的缓存中
             final FaultItem faultItem = new FaultItem(name);
             faultItem.setCurrentLatency(currentLatency);
             faultItem.setStartTimestamp(System.currentTimeMillis() + notAvailableDuration);
@@ -42,8 +51,9 @@ public class LatencyFaultToleranceImpl implements LatencyFaultTolerance<String> 
                 old.setCurrentLatency(currentLatency);
                 old.setStartTimestamp(System.currentTimeMillis() + notAvailableDuration);
             }
-        } else {
+        } else {//broker存在，则更新该broker的时间
             old.setCurrentLatency(currentLatency);
+            //设置可以使用的时间戳
             old.setStartTimestamp(System.currentTimeMillis() + notAvailableDuration);
         }
     }
@@ -91,9 +101,9 @@ public class LatencyFaultToleranceImpl implements LatencyFaultTolerance<String> 
     @Override
     public String toString() {
         return "LatencyFaultToleranceImpl{" +
-            "faultItemTable=" + faultItemTable +
-            ", whichItemWorst=" + whichItemWorst +
-            '}';
+                "faultItemTable=" + faultItemTable +
+                ", whichItemWorst=" + whichItemWorst +
+                '}';
     }
 
     class FaultItem implements Comparable<FaultItem> {
@@ -108,22 +118,24 @@ public class LatencyFaultToleranceImpl implements LatencyFaultTolerance<String> 
         @Override
         public int compareTo(final FaultItem other) {
             if (this.isAvailable() != other.isAvailable()) {
-                if (this.isAvailable())
+                if (this.isAvailable()) {
                     return -1;
+                }
 
-                if (other.isAvailable())
+                if (other.isAvailable()) {
                     return 1;
+                }
             }
 
-            if (this.currentLatency < other.currentLatency)
+            if (this.currentLatency < other.currentLatency) {
                 return -1;
-            else if (this.currentLatency > other.currentLatency) {
+            } else if (this.currentLatency > other.currentLatency) {
                 return 1;
             }
 
-            if (this.startTimestamp < other.startTimestamp)
+            if (this.startTimestamp < other.startTimestamp) {
                 return -1;
-            else if (this.startTimestamp > other.startTimestamp) {
+            } else if (this.startTimestamp > other.startTimestamp) {
                 return 1;
             }
 
@@ -144,17 +156,21 @@ public class LatencyFaultToleranceImpl implements LatencyFaultTolerance<String> 
 
         @Override
         public boolean equals(final Object o) {
-            if (this == o)
+            if (this == o) {
                 return true;
-            if (!(o instanceof FaultItem))
+            }
+            if (!(o instanceof FaultItem)) {
                 return false;
+            }
 
             final FaultItem faultItem = (FaultItem) o;
 
-            if (getCurrentLatency() != faultItem.getCurrentLatency())
+            if (getCurrentLatency() != faultItem.getCurrentLatency()) {
                 return false;
-            if (getStartTimestamp() != faultItem.getStartTimestamp())
+            }
+            if (getStartTimestamp() != faultItem.getStartTimestamp()) {
                 return false;
+            }
             return getName() != null ? getName().equals(faultItem.getName()) : faultItem.getName() == null;
 
         }
@@ -162,10 +178,10 @@ public class LatencyFaultToleranceImpl implements LatencyFaultTolerance<String> 
         @Override
         public String toString() {
             return "FaultItem{" +
-                "name='" + name + '\'' +
-                ", currentLatency=" + currentLatency +
-                ", startTimestamp=" + startTimestamp +
-                '}';
+                    "name='" + name + '\'' +
+                    ", currentLatency=" + currentLatency +
+                    ", startTimestamp=" + startTimestamp +
+                    '}';
         }
 
         public String getName() {
