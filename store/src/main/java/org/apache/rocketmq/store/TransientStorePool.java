@@ -28,12 +28,30 @@ import org.apache.rocketmq.store.config.MessageStoreConfig;
 import org.apache.rocketmq.store.util.LibC;
 import sun.nio.ch.DirectBuffer;
 
+/**
+ * 暂存池
+ */
 public class TransientStorePool {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
 
+    /**
+     * 预分配的ByteBuffer的数量
+     */
     private final int poolSize;
+
+    /**
+     * 每个ByteBuffer的大小
+     */
     private final int fileSize;
+
+    /**
+     * 可用的ByteBuffer
+     */
     private final Deque<ByteBuffer> availableBuffers;
+
+    /**
+     * 消息存储配置文件
+     */
     private final MessageStoreConfig storeConfig;
 
     public TransientStorePool(final MessageStoreConfig storeConfig) {
@@ -44,6 +62,7 @@ public class TransientStorePool {
     }
 
     /**
+     * 初始化预分配池
      * It's a heavy init method.
      */
     public void init() {
@@ -52,12 +71,16 @@ public class TransientStorePool {
 
             final long address = ((DirectBuffer) byteBuffer).address();
             Pointer pointer = new Pointer(address);
+            //锁住内存，避免操作系统虚拟内存的换入换出
             LibC.INSTANCE.mlock(pointer, new NativeLong(fileSize));
 
             availableBuffers.offer(byteBuffer);
         }
     }
 
+    /**
+     * 销毁内存池
+     */
     public void destroy() {
         for (ByteBuffer byteBuffer : availableBuffers) {
             final long address = ((DirectBuffer) byteBuffer).address();
@@ -66,12 +89,20 @@ public class TransientStorePool {
         }
     }
 
+    /**
+     * 使用完毕后归还ByteBuffer
+     * @param byteBuffer
+     */
     public void returnBuffer(ByteBuffer byteBuffer) {
         byteBuffer.position(0);
         byteBuffer.limit(fileSize);
         this.availableBuffers.offerFirst(byteBuffer);
     }
 
+    /**
+     * 获取ByteBuffer
+     * @return
+     */
     public ByteBuffer borrowBuffer() {
         ByteBuffer buffer = availableBuffers.pollFirst();
         if (availableBuffers.size() < poolSize * 0.4) {
@@ -80,8 +111,12 @@ public class TransientStorePool {
         return buffer;
     }
 
+    /**
+     * 可用ByteBuffer的数量
+     * @return
+     */
     public int availableBufferNums() {
-        if (storeConfig.isTransientStorePoolEnable()) {
+        if (storeConfig.isTransientStorePoolEnable()) {//如果启用了暂存池，则返回队列中的元素个数
             return availableBuffers.size();
         }
         return Integer.MAX_VALUE;

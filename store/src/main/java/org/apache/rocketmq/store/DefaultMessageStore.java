@@ -477,12 +477,14 @@ public class DefaultMessageStore implements MessageStore{
         }
 
         long beginTime = this.getSystemClock().now();
+        //调用commitLog保存消息
         PutMessageResult result = this.commitLog.putMessage(msg);
 
         long elapsedTime = this.getSystemClock().now() - beginTime;
         if (elapsedTime > 500) {
             log.warn("putMessage not in lock elapsed time(ms)={}, bodyLength={}", elapsedTime, msg.getBody().length);
         }
+        //添加消息统计
         this.storeStatsService.setPutMessageEntireTimeMax(elapsedTime);
 
         if (null == result || !result.isOk()) {
