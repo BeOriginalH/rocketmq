@@ -554,13 +554,14 @@ public class ConsumeQueue{
         int mappedFileSize = this.mappedFileSize;
         //计算偏移量
         long offset = startIndex * CQ_STORE_UNIT_SIZE;
-        if (offset >= this.getMinLogicOffset()) {
+        if (offset >= this.getMinLogicOffset()) {//指定偏移量大于等于最小逻辑偏移量
             MappedFile mappedFile = this.mappedFileQueue.findMappedFileByOffset(offset);
             if (mappedFile != null) {
                 SelectMappedBufferResult result = mappedFile.selectMappedBuffer((int) (offset % mappedFileSize));
                 return result;
             }
         }
+        //如果指定的偏移量小于最小逻辑偏移量，则返回null，代表消息已经删除
         return null;
     }
 

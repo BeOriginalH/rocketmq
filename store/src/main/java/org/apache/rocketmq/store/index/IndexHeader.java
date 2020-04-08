@@ -14,13 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.rocketmq.store.index;
 
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * Index的头部信息，占40个字节
+ */
 public class IndexHeader {
+
+    /**
+     * IndexHeader占用的大小
+     */
     public static final int INDEX_HEADER_SIZE = 40;
     private static int beginTimestampIndex = 0;
     private static int endTimestampIndex = 8;
@@ -29,12 +37,34 @@ public class IndexHeader {
     private static int hashSlotcountIndex = 32;
     private static int indexCountIndex = 36;
     private final ByteBuffer byteBuffer;
+    /**
+     * 该索引文件中包含消息的最小存储时间
+     */
     private AtomicLong beginTimestamp = new AtomicLong(0);
+
+    /**
+     * 该索引文件中包含消息的最大存储时间
+     */
     private AtomicLong endTimestamp = new AtomicLong(0);
+
+    /**
+     * 该索引文件中包含消息的最小物理偏移量
+     */
     private AtomicLong beginPhyOffset = new AtomicLong(0);
+
+    /**
+     * 该索引文件中包含消息的最大物理偏移量
+     */
     private AtomicLong endPhyOffset = new AtomicLong(0);
+
+    /**
+     * hashslot个数
+     */
     private AtomicInteger hashSlotCount = new AtomicInteger(0);
 
+    /**
+     * index条目列表当前已使用的个数，默认就是1
+     */
     private AtomicInteger indexCount = new AtomicInteger(1);
 
     public IndexHeader(final ByteBuffer byteBuffer) {
