@@ -190,8 +190,14 @@ public class MappedFileQueue{
         }
     }
 
+    /**
+     * 将MappedFile文件加载到内存中
+     *
+     * @return
+     */
     public boolean load() {
 
+        //获取目录下的所有文件
         File dir = new File(this.storePath);
         File[] files = dir.listFiles();
         if (files != null) {
@@ -199,18 +205,21 @@ public class MappedFileQueue{
             Arrays.sort(files);
             for (File file : files) {
 
-                if (file.length() != this.mappedFileSize) {
+                if (file.length() != this.mappedFileSize) {//文件大小和指定的值不匹配，不加载
                     log.warn(file + "\t" + file.length()
                         + " length not matched message store config value, please check it manually");
                     return false;
                 }
 
                 try {
-                    MappedFile mappedFile = new MappedFile(file.getPath(), mappedFileSize);
 
+                    //新建MappedFile
+                    MappedFile mappedFile = new MappedFile(file.getPath(), mappedFileSize);
+                    //初始化position
                     mappedFile.setWrotePosition(this.mappedFileSize);
                     mappedFile.setFlushedPosition(this.mappedFileSize);
                     mappedFile.setCommittedPosition(this.mappedFileSize);
+                    //放入集合中
                     this.mappedFiles.add(mappedFile);
                     log.info("load " + file.getPath() + " OK");
                 } catch (IOException e) {
