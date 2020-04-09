@@ -467,7 +467,8 @@ public class DefaultMessageStore implements MessageStore{
             return new PutMessageResult(PutMessageStatus.MESSAGE_ILLEGAL, null);
         }
 
-        if (msg.getPropertiesString() != null && msg.getPropertiesString().length() > Short.MAX_VALUE) {//消息属性长度超过最大值，不能保存消息
+        if (msg.getPropertiesString() != null
+            && msg.getPropertiesString().length() > Short.MAX_VALUE) {//消息属性长度超过最大值，不能保存消息
             log.warn("putMessage message properties length too long " + msg.getPropertiesString().length());
             return new PutMessageResult(PutMessageStatus.PROPERTIES_SIZE_EXCEEDED, null);
         }
@@ -1967,8 +1968,15 @@ public class DefaultMessageStore implements MessageStore{
         }
     }
 
+    /**
+     * 更新commitlog对应的ConsumeQueue和index文件的定时任务，在broker启动的时候就启动该任务
+     * 就是将commitlog中提交的消息同步到index和ConsumeQueue中
+     */
     class ReputMessageService extends ServiceThread{
 
+        /**
+         * 开始进行同步的偏移量位置
+         */
         private volatile long reputFromOffset = 0;
 
         public long getReputFromOffset() {
@@ -2010,9 +2018,13 @@ public class DefaultMessageStore implements MessageStore{
             return this.reputFromOffset < DefaultMessageStore.this.commitLog.getMaxOffset();
         }
 
+        /**
+         * 消息同步到index和ConsumeQueue中
+         */
         private void doReput() {
 
-            if (this.reputFromOffset < DefaultMessageStore.this.commitLog.getMinOffset()) {
+            if (this.reputFromOffset < DefaultMessageStore.this.commitLog
+                .getMinOffset()) {//如果同步的偏移量小于最小的偏移量，从最小偏移量处开始进行同步
                 log.warn(
                     "The reputFromOffset={} is smaller than minPyOffset={}, this usually indicate that the dispatch behind too much and the commitlog has expired.",
                     this.reputFromOffset, DefaultMessageStore.this.commitLog.getMinOffset());
@@ -2102,6 +2114,7 @@ public class DefaultMessageStore implements MessageStore{
 
             while (!this.isStopped()) {
                 try {
+                    //每隔1毫秒就同步一次，所以几乎是实时同步的
                     Thread.sleep(1);
                     this.doReput();
                 } catch (Exception e) {
