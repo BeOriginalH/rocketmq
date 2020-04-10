@@ -188,10 +188,14 @@ public class CommitLog{
      */
     public void recoverNormally(long maxPhyOffsetOfConsumeQueue) {
 
+        //文件恢复的时候是否要进行CRC校验
         boolean checkCRCOnRecover = this.defaultMessageStore.getMessageStoreConfig().isCheckCRCOnRecover();
+
+        //获取commitlog文件
         final List<MappedFile> mappedFiles = this.mappedFileQueue.getMappedFiles();
         if (!mappedFiles.isEmpty()) {
             // Began to recover from the last third file
+            //从倒数第三个文件开始进行恢复，如果小于3个文件，则从第一个文件开始进行恢复
             int index = mappedFiles.size() - 3;
             if (index < 0) {
                 index = 0;
@@ -202,6 +206,8 @@ public class CommitLog{
             long processOffset = mappedFile.getFileFromOffset();
             long mappedFileOffset = 0;
             while (true) {
+
+                //读取commitlog中的每一个消息
                 DispatchRequest dispatchRequest = this.checkMessageAndReturnSize(byteBuffer, checkCRCOnRecover);
                 int size = dispatchRequest.getMsgSize();
                 // Normal data
@@ -211,13 +217,13 @@ public class CommitLog{
                 // Come the end of the file, switch to the next file Since the
                 // return 0 representatives met last hole,
                 // this can not be included in truncate offset
-                else if (dispatchRequest.isSuccess() && size == 0) {
+                else if (dispatchRequest.isSuccess() && size == 0) {//读取到文件末尾
                     index++;
-                    if (index >= mappedFiles.size()) {
+                    if (index >= mappedFiles.size()) {//读取完成
                         // Current branch can not happen
                         log.info("recover last 3 physics file over, last mapped file " + mappedFile.getFileName());
                         break;
-                    } else {
+                    } else {//读取下一个
                         mappedFile = mappedFiles.get(index);
                         byteBuffer = mappedFile.sliceByteBuffer();
                         processOffset = mappedFile.getFileFromOffset();
@@ -233,6 +239,7 @@ public class CommitLog{
             }
 
             processOffset += mappedFileOffset;
+            //更新flush和commit指针
             this.mappedFileQueue.setFlushedWhere(processOffset);
             this.mappedFileQueue.setCommittedWhere(processOffset);
             this.mappedFileQueue.truncateDirtyFiles(processOffset);
@@ -716,11 +723,19 @@ public class CommitLog{
         return putMessageResult;
     }
 
+    /**
+     * commitlog刷盘
+     *
+     * @param result
+     * @param putMessageResult
+     * @param messageExt
+     */
     public void handleDiskFlush(AppendMessageResult result, PutMessageResult putMessageResult, MessageExt messageExt) {
         // Synchronization flush
-        if (FlushDiskType.SYNC_FLUSH == this.defaultMessageStore.getMessageStoreConfig().getFlushDiskType()) {
+        if (FlushDiskType.SYNC_FLUSH == this.defaultMessageStore.getMessageStoreConfig().getFlushDiskType()) {//同步刷盘
             final GroupCommitService service = (GroupCommitService) this.flushCommitLogService;
-            if (messageExt.isWaitStoreMsgOK()) {
+            if (messageExt.isWaitStoreMsgOK()) {//需要消息确认
+                //新建提交刷盘对象
                 GroupCommitRequest request = new GroupCommitRequest(result.getWroteOffset() + result.getWroteBytes());
                 service.putRequest(request);
                 boolean flushOK = request
@@ -730,12 +745,12 @@ public class CommitLog{
                         + messageExt.getTags() + " client address: " + messageExt.getBornHostString());
                     putMessageResult.setPutMessageStatus(PutMessageStatus.FLUSH_DISK_TIMEOUT);
                 }
-            } else {
+            } else {//不需要消息确认
                 service.wakeup();
             }
         }
         // Asynchronous flush
-        else {
+        else {//异步刷盘
             if (!this.defaultMessageStore.getMessageStoreConfig().isTransientStorePoolEnable()) {
                 flushCommitLogService.wakeup();
             } else {
@@ -1179,12 +1194,24 @@ public class CommitLog{
         }
     }
 
+    /**
+     * 提交刷盘请求
+     */
     public static class GroupCommitRequest{
 
+        /**
+         * 刷盘点偏移量
+         */
         private final long nextOffset;
 
+        /**
+         *
+         */
         private final CountDownLatch countDownLatch = new CountDownLatch(1);
 
+        /**
+         * 刷盘结果
+         */
         private volatile boolean flushOK = false;
 
         public GroupCommitRequest(long nextOffset) {

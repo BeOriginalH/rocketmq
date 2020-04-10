@@ -245,20 +245,25 @@ public class DefaultMessageStore implements MessageStore{
         boolean result = true;
 
         try {
+            //判断上一次退出是否是正常退出
             boolean lastExitOK = !this.isTempFileExist();
             log.info("last shutdown {}", lastExitOK ? "normally" : "abnormally");
 
+            //加载延迟队列
             if (null != scheduleMessageService) {
                 result = result && this.scheduleMessageService.load();
             }
 
             // load Commit Log
+            //加载commitlog
             result = result && this.commitLog.load();
 
             // load Consume Queue
+            //加载ConsumeQueue
             result = result && this.loadConsumeQueue();
 
             if (result) {
+                //加载存储监测点
                 this.storeCheckpoint = new StoreCheckpoint(
                     StorePathConfigHelper.getStoreCheckpoint(this.messageStoreConfig.getStorePathRootDir()));
 
@@ -1424,6 +1429,13 @@ public class DefaultMessageStore implements MessageStore{
         }
     }
 
+    /**
+     * 判断abort文件是否存在，abort文件是判断broker是否正常退出的依据
+     * 在broker启动的时候，会创建该文件，在正常退出的时候会删除该文件
+     * 如果启动的时候，该文件存在，则代表上一次是异常退出
+     *
+     * @return
+     */
     private boolean isTempFileExist() {
 
         String fileName = StorePathConfigHelper.getAbortFile(this.messageStoreConfig.getStorePathRootDir());
@@ -1467,6 +1479,10 @@ public class DefaultMessageStore implements MessageStore{
         return true;
     }
 
+    /**
+     * 恢复，当broker中写入commitlog后，broker异常，消息没有异步同步到ConsumeQueue和index中时的恢复操作
+     * @param lastExitOK
+     */
     private void recover(final boolean lastExitOK) {
 
         long maxPhyOffsetOfConsumeQueue = this.recoverConsumeQueue();
@@ -1579,9 +1595,16 @@ public class DefaultMessageStore implements MessageStore{
         }
     }
 
+    /**
+     * 更新ConsumeQueue
+     *
+     * @param dispatchRequest
+     */
     public void putMessagePositionInfo(DispatchRequest dispatchRequest) {
 
+        //获取ConsumeQueue
         ConsumeQueue cq = this.findConsumeQueue(dispatchRequest.getTopic(), dispatchRequest.getQueueId());
+        //更新
         cq.putMessagePositionInfoWrapper(dispatchRequest);
     }
 
@@ -2043,6 +2066,8 @@ public class DefaultMessageStore implements MessageStore{
                         this.reputFromOffset = result.getStartOffset();
 
                         for (int readSize = 0; readSize < result.getSize() && doNext; ) {
+
+                            //获取一条完整消息
                             DispatchRequest dispatchRequest = DefaultMessageStore.this.commitLog
                                 .checkMessageAndReturnSize(result.getByteBuffer(), false, false);
                             int size = dispatchRequest.getBufferSize() == -1 ?
@@ -2051,6 +2076,7 @@ public class DefaultMessageStore implements MessageStore{
 
                             if (dispatchRequest.isSuccess()) {
                                 if (size > 0) {
+                                    //转发消息
                                     DefaultMessageStore.this.doDispatch(dispatchRequest);
 
                                     if (BrokerRole.SLAVE != DefaultMessageStore.this.getMessageStoreConfig()

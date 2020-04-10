@@ -18,39 +18,91 @@ package org.apache.rocketmq.store;
 
 import java.util.Map;
 
-public class DispatchRequest {
+/**
+ * 消息转发对象，主要是为了将commitlog中的消息同步到ConsumeQueue和index文件中
+ */
+public class DispatchRequest{
+
+    /**
+     * 主题
+     */
     private final String topic;
+
+    /**
+     * 消息队列ID
+     */
     private final int queueId;
+
+    /**
+     * 消息物理偏移量
+     */
     private final long commitLogOffset;
+
+    /**
+     * 消息长度
+     */
     private int msgSize;
+
+    /**
+     * 消息过滤tag hashCode
+     */
     private final long tagsCode;
+
+    /**
+     * 消息存储的时间戳
+     */
     private final long storeTimestamp;
+
+    /**
+     * 消息队列的偏移量
+     */
     private final long consumeQueueOffset;
+
+    /**
+     * 消息索引key
+     */
     private final String keys;
+
+    /**
+     * 是否成功解析到完整的消息
+     */
     private final boolean success;
+
+    /**
+     * 消息唯一键
+     */
     private final String uniqKey;
 
+    /**
+     * 消息系统标识
+     */
     private final int sysFlag;
+
+    /**
+     * 消息预处理事务偏移量
+     */
     private final long preparedTransactionOffset;
+
+    /**
+     * 消息属性
+     */
     private final Map<String, String> propertiesMap;
+
+    /**
+     * 位图
+     */
     private byte[] bitMap;
 
+    /**
+     * buffer大小
+     */
     private int bufferSize = -1;//the buffer size maybe larger than the msg size if the message is wrapped by something
 
-    public DispatchRequest(
-        final String topic,
-        final int queueId,
-        final long commitLogOffset,
-        final int msgSize,
-        final long tagsCode,
-        final long storeTimestamp,
-        final long consumeQueueOffset,
-        final String keys,
-        final String uniqKey,
-        final int sysFlag,
-        final long preparedTransactionOffset,
-        final Map<String, String> propertiesMap
-    ) {
+    public DispatchRequest(final String topic, final int queueId, final long commitLogOffset, final int msgSize,
+        final long tagsCode, final long storeTimestamp, final long consumeQueueOffset, final String keys,
+        final String uniqKey, final int sysFlag, final long preparedTransactionOffset,
+        final Map<String, String> propertiesMap) {
+
         this.topic = topic;
         this.queueId = queueId;
         this.commitLogOffset = commitLogOffset;
@@ -68,6 +120,7 @@ public class DispatchRequest {
     }
 
     public DispatchRequest(int size) {
+
         this.topic = "";
         this.queueId = 0;
         this.commitLogOffset = 0;
@@ -84,6 +137,7 @@ public class DispatchRequest {
     }
 
     public DispatchRequest(int size, boolean success) {
+
         this.topic = "";
         this.queueId = 0;
         this.commitLogOffset = 0;
@@ -100,74 +154,92 @@ public class DispatchRequest {
     }
 
     public String getTopic() {
+
         return topic;
     }
 
     public int getQueueId() {
+
         return queueId;
     }
 
     public long getCommitLogOffset() {
+
         return commitLogOffset;
     }
 
     public int getMsgSize() {
+
         return msgSize;
     }
 
     public long getStoreTimestamp() {
+
         return storeTimestamp;
     }
 
     public long getConsumeQueueOffset() {
+
         return consumeQueueOffset;
     }
 
     public String getKeys() {
+
         return keys;
     }
 
     public long getTagsCode() {
+
         return tagsCode;
     }
 
     public int getSysFlag() {
+
         return sysFlag;
     }
 
     public long getPreparedTransactionOffset() {
+
         return preparedTransactionOffset;
     }
 
     public boolean isSuccess() {
+
         return success;
     }
 
     public String getUniqKey() {
+
         return uniqKey;
     }
 
     public Map<String, String> getPropertiesMap() {
+
         return propertiesMap;
     }
 
     public byte[] getBitMap() {
+
         return bitMap;
     }
 
     public void setBitMap(byte[] bitMap) {
+
         this.bitMap = bitMap;
     }
 
     public void setMsgSize(int msgSize) {
+
         this.msgSize = msgSize;
     }
 
     public int getBufferSize() {
+
         return bufferSize;
     }
 
     public void setBufferSize(int bufferSize) {
+
         this.bufferSize = bufferSize;
     }
 }
