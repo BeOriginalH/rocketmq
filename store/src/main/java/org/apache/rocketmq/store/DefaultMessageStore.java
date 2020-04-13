@@ -1357,6 +1357,7 @@ public class DefaultMessageStore implements MessageStore{
 
     private void addScheduleTask() {
 
+        //清除commitlog和ConsumeQueue文件，每10秒执行一次
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable(){
 
             @Override
@@ -1408,9 +1409,14 @@ public class DefaultMessageStore implements MessageStore{
         // }, 1, 1, TimeUnit.HOURS);
     }
 
+    /**
+     * 清除过期的commitlog和ConsumeQueue
+     */
     private void cleanFilesPeriodically() {
 
+        //清理commitlog
         this.cleanCommitLogService.run();
+        //清除ConsumeQueue
         this.cleanConsumeQueueService.run();
     }
 
@@ -1695,6 +1701,9 @@ public class DefaultMessageStore implements MessageStore{
         }
     }
 
+    /**
+     * 清除commitlog的服务
+     */
     class CleanCommitLogService{
 
         private final static int MAX_MANUAL_DELETE_FILE_TIMES = 20;
@@ -1720,6 +1729,7 @@ public class DefaultMessageStore implements MessageStore{
         public void run() {
 
             try {
+                //删除过期的文件
                 this.deleteExpiredFiles();
 
                 this.redeleteHangedFile();
@@ -1728,12 +1738,21 @@ public class DefaultMessageStore implements MessageStore{
             }
         }
 
+        /**
+         * 删除过期的文件
+         */
         private void deleteExpiredFiles() {
 
             int deleteCount = 0;
+
+            //文件保留的时间，超过改时间可以被删除
             long fileReservedTime = DefaultMessageStore.this.getMessageStoreConfig().getFileReservedTime();
+
+            //删除物理文件的间隔，就是两次删除文件的时间间隔
             int deletePhysicFilesInterval = DefaultMessageStore.this.getMessageStoreConfig()
                 .getDeleteCommitLogFilesInterval();
+
+            //第一次拒绝删除后文件能保存的最大时间，超过该时间后将会强制删除
             int destroyMapedFileIntervalForcibly = DefaultMessageStore.this.getMessageStoreConfig()
                 .getDestroyMapedFileIntervalForcibly();
 
