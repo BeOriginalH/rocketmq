@@ -1706,6 +1706,9 @@ public class DefaultMessageStore implements MessageStore{
      */
     class CleanCommitLogService{
 
+        /**
+         * 删除文件的时间
+         */
         private final static int MAX_MANUAL_DELETE_FILE_TIMES = 20;
 
         private final double diskSpaceWarningLevelRatio = Double
@@ -1756,8 +1759,11 @@ public class DefaultMessageStore implements MessageStore{
             int destroyMapedFileIntervalForcibly = DefaultMessageStore.this.getMessageStoreConfig()
                 .getDestroyMapedFileIntervalForcibly();
 
+            //是否到指定删除文件的时间点
             boolean timeup = this.isTimeToDelete();
+            //是否磁盘已满
             boolean spacefull = this.isSpaceToDelete();
+            //
             boolean manualDelete = this.manualDeleteFileSeveralTimes > 0;
 
             if (timeup || spacefull || manualDelete) {
@@ -1765,6 +1771,7 @@ public class DefaultMessageStore implements MessageStore{
                 if (manualDelete)
                     this.manualDeleteFileSeveralTimes--;
 
+                //是否强制并且马上清除
                 boolean cleanAtOnce = DefaultMessageStore.this.getMessageStoreConfig().isCleanFileForciblyEnable()
                     && this.cleanImmediately;
 
@@ -1772,8 +1779,10 @@ public class DefaultMessageStore implements MessageStore{
                     "begin to delete before {} hours file. timeup: {} spacefull: {} manualDeleteFileSeveralTimes: {} cleanAtOnce: {}",
                     fileReservedTime, timeup, spacefull, manualDeleteFileSeveralTimes, cleanAtOnce);
 
+                //转换为毫秒
                 fileReservedTime *= 60 * 60 * 1000;
 
+                //删除
                 deleteCount = DefaultMessageStore.this.commitLog
                     .deleteExpiredFile(fileReservedTime, deletePhysicFilesInterval, destroyMapedFileIntervalForcibly,
                         cleanAtOnce);
@@ -1802,6 +1811,10 @@ public class DefaultMessageStore implements MessageStore{
             return CleanCommitLogService.class.getSimpleName();
         }
 
+        /**
+         * 是否到指定删除文件的时间点，通过配置文件进行配置deleteWhen指定
+         * @return
+         */
         private boolean isTimeToDelete() {
 
             String when = DefaultMessageStore.this.getMessageStoreConfig().getDeleteWhen();
@@ -1813,6 +1826,10 @@ public class DefaultMessageStore implements MessageStore{
             return false;
         }
 
+        /**
+         * 是否磁盘的空间充足，如果不充足，则可以删除文件
+         * @return
+         */
         private boolean isSpaceToDelete() {
 
             double ratio = DefaultMessageStore.this.getMessageStoreConfig().getDiskMaxUsedSpaceRatio() / 100.0;
