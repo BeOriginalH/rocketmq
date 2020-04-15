@@ -290,6 +290,12 @@ public class MappedFile extends ReferenceResource{
         return fileChannel;
     }
 
+    /**
+     * 添加消息
+     * @param msg
+     * @param cb
+     * @return
+     */
     public AppendMessageResult appendMessage(final MessageExtBrokerInner msg, final AppendMessageCallback cb) {
 
         return appendMessagesInner(msg, cb);

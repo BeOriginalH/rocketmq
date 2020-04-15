@@ -590,11 +590,9 @@ public class CommitLog{
      * @return
      */
     public PutMessageResult putMessage(final MessageExtBrokerInner msg) {
-        // Set the storage time
+
         //设置存储时间
         msg.setStoreTimestamp(System.currentTimeMillis());
-        // Set the message body BODY CRC (consider the most appropriate setting
-        // on the client)
         //设置消息的校验信息
         msg.setBodyCRC(UtilAll.crc32(msg.getBody()));
         // Back to Results
@@ -609,10 +607,12 @@ public class CommitLog{
         if (tranType == MessageSysFlag.TRANSACTION_NOT_TYPE || tranType == MessageSysFlag.TRANSACTION_COMMIT_TYPE) {
             // Delay Delivery
             if (msg.getDelayTimeLevel() > 0) {//延迟消息
-                if (msg.getDelayTimeLevel() > this.defaultMessageStore.getScheduleMessageService().getMaxDelayLevel()) {
+                if (msg.getDelayTimeLevel() > this.defaultMessageStore.getScheduleMessageService()
+                    .getMaxDelayLevel()) {//如果消息的延迟等级大于配置的最大值，设置为配置的最大值
                     msg.setDelayTimeLevel(this.defaultMessageStore.getScheduleMessageService().getMaxDelayLevel());
                 }
 
+                //修改消息的队列和topic
                 topic = ScheduleMessageService.SCHEDULE_TOPIC;
                 queueId = ScheduleMessageService.delayLevel2QueueId(msg.getDelayTimeLevel());
 
@@ -626,6 +626,7 @@ public class CommitLog{
             }
         }
 
+        //ipv6设置
         InetSocketAddress bornSocketAddress = (InetSocketAddress) msg.getBornHost();
         if (bornSocketAddress.getAddress() instanceof Inet6Address) {
             msg.setBornHostV6Flag();
@@ -653,7 +654,7 @@ public class CommitLog{
             // global
             msg.setStoreTimestamp(beginLockTimestamp);
 
-            if (null == mappedFile || mappedFile.isFull()) {//如果没有或者最后一个MappedFile已经满了
+            if (null == mappedFile || mappedFile.isFull()) {//文件不存在或者已经使用完，新创建一个
                 mappedFile = this.mappedFileQueue.getLastMappedFile(0); // Mark: NewFile may be cause noise
             }
             if (null == mappedFile) {//创建失败
@@ -665,6 +666,7 @@ public class CommitLog{
 
             //添加消息
             result = mappedFile.appendMessage(msg, this.appendMessageCallback);
+
             switch (result.getStatus()) {
                 case PUT_OK://添加成功
                     break;

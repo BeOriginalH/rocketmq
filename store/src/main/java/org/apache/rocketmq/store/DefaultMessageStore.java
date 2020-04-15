@@ -127,7 +127,7 @@ public class DefaultMessageStore implements MessageStore{
     private final ScheduleMessageService scheduleMessageService;
 
     /**
-     *
+     *存储数据统计服务
      */
     private final StoreStatsService storeStatsService;
 
@@ -165,6 +165,9 @@ public class DefaultMessageStore implements MessageStore{
      */
     private StoreCheckpoint storeCheckpoint;
 
+    /**
+     * 打印日志临界点
+     */
     private AtomicLong printTimes = new AtomicLong(0);
 
     /**

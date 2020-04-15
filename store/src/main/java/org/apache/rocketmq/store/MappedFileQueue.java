@@ -312,6 +312,10 @@ public class MappedFileQueue{
         return getLastMappedFile(startOffset, true);
     }
 
+    /**
+     * 获取MappedFileQueue中的最后一个文件
+     * @return
+     */
     public MappedFile getLastMappedFile() {
 
         MappedFile mappedFileLast = null;

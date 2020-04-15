@@ -24,25 +24,75 @@ import java.nio.ByteBuffer;
 import org.apache.rocketmq.common.TopicFilterType;
 import org.apache.rocketmq.common.sysflag.MessageSysFlag;
 
+/**
+ * 消息扩展类，对Message进行进一步的封装
+ */
 public class MessageExt extends Message {
     private static final long serialVersionUID = 5720810158625748049L;
 
+    /**
+     * 队列ID
+     */
     private int queueId;
 
+    /**
+     * 整个消息存储空间带下
+     */
     private int storeSize;
 
+    /**
+     * 队列偏移量
+     */
     private long queueOffset;
+
+    /**
+     * 系统标识
+     */
     private int sysFlag;
+
+    /**
+     * 消息产生时间
+     */
     private long bornTimestamp;
+
+    /**
+     * 消息产生的来源
+     */
     private SocketAddress bornHost;
 
+    /**
+     * 存储消息的时间
+     */
     private long storeTimestamp;
+
+    /**
+     * 存储消息的host
+     */
     private SocketAddress storeHost;
+
+    /**
+     * 消息ID
+     */
     private String msgId;
+
+    /**
+     * commitlog中的物理偏移量
+     */
     private long commitLogOffset;
+
+    /**
+     * CRC验证
+     */
     private int bodyCRC;
+
+    /**
+     * 消费次数
+     */
     private int reconsumeTimes;
 
+    /**
+     * 事务相关
+     */
     private long preparedTransactionOffset;
 
     public MessageExt() {
