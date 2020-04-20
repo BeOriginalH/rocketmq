@@ -29,13 +29,16 @@ import org.apache.rocketmq.store.util.LibC;
 import sun.nio.ch.DirectBuffer;
 
 /**
- * 暂存池
+ * 暂存池 用来临时存放数据，数据先写入该内存映射中，然后通过commit线程定时将数据提交到与目标物理文件对应的内存映射文件中
+ *
+ * 主要是提供一种内存锁定机制，将当前的堆外内存一直锁定到内存中，避免被进程将内存交换到磁盘
  */
 public class TransientStorePool {
+
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
 
     /**
-     * 预分配的ByteBuffer的数量
+     * 预分配的ByteBuffer的数量 默认5个
      */
     private final int poolSize;
 
