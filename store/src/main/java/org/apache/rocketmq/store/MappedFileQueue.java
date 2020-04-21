@@ -454,7 +454,7 @@ public class MappedFileQueue {
      *
      * @param expiredTime         过期时间
      * @param deleteFilesInterval 两次删除文件的时间间隔
-     * @param intervalForcibly    是否强制删除
+     * @param intervalForcibly    第一次删除被拒绝后的停留时间
      * @param cleanImmediately    是否马上删除
      * @return
      */
@@ -468,12 +468,18 @@ public class MappedFileQueue {
             return 0;
         }
 
+        //只删除到倒数第二个文件
         int mfsLength = mfs.length - 1;
+
         int deleteCount = 0;
+
         List<MappedFile> files = new ArrayList<MappedFile>();
+
         if (null != mfs) {
             for (int i = 0; i < mfsLength; i++) {
+
                 MappedFile mappedFile = (MappedFile) mfs[i];
+
                 //文件的最后一次修改时间+保留的时间
                 long liveMaxTimestamp = mappedFile.getLastModifiedTimestamp() + expiredTime;
 

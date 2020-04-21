@@ -30,7 +30,7 @@ import org.apache.rocketmq.logging.InternalLoggerFactory;
 import org.apache.rocketmq.store.MappedFile;
 
 /**
- * index索引文件
+ * index索引文件,为消息建立索引，提高消息查询速度
  */
 public class IndexFile {
 

@@ -199,6 +199,11 @@ public class UtilAll {
             cal.get(Calendar.SECOND));
     }
 
+    /**
+     * 获取磁盘分区中文件已使用的比例
+     * @param path
+     * @return
+     */
     public static double getDiskPartitionSpaceUsedPercent(final String path) {
         if (null == path || path.isEmpty())
             return -1;
@@ -209,12 +214,16 @@ public class UtilAll {
             if (!file.exists())
                 return -1;
 
+            //获取文件总大小
             long totalSpace = file.getTotalSpace();
 
             if (totalSpace > 0) {
+                //可用大小
                 long freeSpace = file.getFreeSpace();
+                //已使用大小
                 long usedSpace = totalSpace - freeSpace;
 
+                //使用比例
                 return usedSpace / (double) totalSpace;
             }
         } catch (Exception e) {

@@ -115,12 +115,12 @@ public class MessageStoreConfig{
      * 销毁MappedFile被拒绝的最大存活时间，默认120s。清除过期文件线程在初次销毁mappedfile时，
      * 如果该文件被其他线程引用，引用次数大于0.则设置MappedFile的可用状态为false，
      * 并设置第一次删除时间，下一次清理任务到达时，如果系统时间大于初次删除时间加上本参数，
-     * 则将ref次数一次减1000，知道引用次数小于0，则释放物理资源
+     * 则将ref次数一次减1000，直到引用次数小于0，则释放物理资源
      */
     private int destroyMapedFileIntervalForcibly = 1000 * 120;
 
     /**
-     * 试图删除文件间隔
+     * 重新删除文件的时间间隔
      */
     private int redeleteHangedFileInterval = 1000 * 120;
 
