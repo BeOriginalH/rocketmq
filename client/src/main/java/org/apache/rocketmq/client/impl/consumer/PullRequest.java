@@ -14,15 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.rocketmq.client.impl.consumer;
 
 import org.apache.rocketmq.common.message.MessageQueue;
 
+/**
+ * pull方式拉取消息请求对象
+ */
 public class PullRequest {
+    /**
+     * 消费组
+     */
     private String consumerGroup;
+    /**
+     * 待拉取的消费队列
+     */
     private MessageQueue messageQueue;
+    /**
+     * 消息处理队列，从broker拉取回来的消息先存入该队列
+     */
     private ProcessQueue processQueue;
+    /**
+     * 待拉取的MessageQueue偏移量
+     */
     private long nextOffset;
+    /**
+     * 是否被锁定
+     */
     private boolean lockedFirst = false;
 
     public boolean isLockedFirst() {
@@ -68,30 +87,37 @@ public class PullRequest {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         PullRequest other = (PullRequest) obj;
         if (consumerGroup == null) {
-            if (other.consumerGroup != null)
+            if (other.consumerGroup != null) {
                 return false;
-        } else if (!consumerGroup.equals(other.consumerGroup))
+            }
+        } else if (!consumerGroup.equals(other.consumerGroup)) {
             return false;
+        }
         if (messageQueue == null) {
-            if (other.messageQueue != null)
+            if (other.messageQueue != null) {
                 return false;
-        } else if (!messageQueue.equals(other.messageQueue))
+            }
+        } else if (!messageQueue.equals(other.messageQueue)) {
             return false;
+        }
         return true;
     }
 
     @Override
     public String toString() {
         return "PullRequest [consumerGroup=" + consumerGroup + ", messageQueue=" + messageQueue
-            + ", nextOffset=" + nextOffset + "]";
+                + ", nextOffset=" + nextOffset + "]";
     }
 
     public ProcessQueue getProcessQueue() {

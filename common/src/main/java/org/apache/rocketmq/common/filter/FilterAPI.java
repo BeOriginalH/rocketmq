@@ -36,15 +36,24 @@ public class FilterAPI {
         return simple;
     }
 
+    /**
+     * 构建订阅信息
+     * @param consumerGroup consumer消费者
+     * @param topic 主题
+     * @param subString 订阅表达式
+     * @return
+     * @throws Exception
+     */
     public static SubscriptionData buildSubscriptionData(final String consumerGroup, String topic,
         String subString) throws Exception {
+
         SubscriptionData subscriptionData = new SubscriptionData();
         subscriptionData.setTopic(topic);
         subscriptionData.setSubString(subString);
 
-        if (null == subString || subString.equals(SubscriptionData.SUB_ALL) || subString.length() == 0) {
+        if (null == subString || subString.equals(SubscriptionData.SUB_ALL) || subString.length() == 0) {//订阅所有
             subscriptionData.setSubString(SubscriptionData.SUB_ALL);
-        } else {
+        } else {//根据||拆分tag
             String[] tags = subString.split("\\|\\|");
             if (tags.length > 0) {
                 for (String tag : tags) {

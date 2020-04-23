@@ -47,7 +47,7 @@ public class SubscriptionData implements Comparable<SubscriptionData> {
     private String topic;
 
     /**
-     * todo 不知道什么意思
+     * 订阅表达式
      */
     private String subString;
 
@@ -67,7 +67,7 @@ public class SubscriptionData implements Comparable<SubscriptionData> {
     private long subVersion = System.currentTimeMillis();
 
     /**
-     * todo 不知道什么意思
+     * 订阅表达式模式 TAG 或者SQL92
      */
     private String expressionType = ExpressionType.TAG;
 

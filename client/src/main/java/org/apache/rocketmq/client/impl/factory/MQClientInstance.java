@@ -1068,7 +1068,7 @@ public class MQClientInstance {
     }
 
     public void doRebalance() {
-        for (Map.Entry<String, MQConsumerInner> entry : this.consumerTable.entrySet()) {
+        for (Map.Entry<String, MQConsumerInner> entry : this.consumerTable.entrySet()) {//遍历每个消费者，进行负载
             MQConsumerInner impl = entry.getValue();
             if (impl != null) {
                 try {
