@@ -58,7 +58,7 @@ public class RouteInfoManager {
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     /**
-     * topic消息队列路由信息
+     * 主题队列信息
      */
     private final HashMap<String/* topic */, List<QueueData>> topicQueueTable;
 
@@ -164,7 +164,7 @@ public class RouteInfoManager {
 
                 boolean registerFirst = false;
 
-                //根据brokerName查找broker的信息，如果并不存在，则新建一个
+                //根据brokerName查找broker的信息，如果不存在，则新建一个
                 BrokerData brokerData = this.brokerAddrTable.get(brokerName);
                 if (null == brokerData) {
                     registerFirst = true;
@@ -483,7 +483,11 @@ public class RouteInfoManager {
         return null;
     }
 
+    /**
+     * 扫描下线的broker
+     */
     public void scanNotActiveBroker() {
+
         Iterator<Entry<String, BrokerLiveInfo>> it = this.brokerLiveTable.entrySet().iterator();
         while (it.hasNext()) {
             Entry<String, BrokerLiveInfo> next = it.next();
@@ -531,7 +535,9 @@ public class RouteInfoManager {
             try {
                 try {
                     this.lock.writeLock().lockInterruptibly();
+                    //更新brokerLiveTable
                     this.brokerLiveTable.remove(brokerAddrFound);
+                    //更新filterServerTable
                     this.filterServerTable.remove(brokerAddrFound);
                     String brokerNameFound = null;
                     boolean removeBrokerName = false;

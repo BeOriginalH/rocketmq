@@ -120,7 +120,6 @@ public class NamesrvController{
             @Override
             public void run() {
 
-                //todo 如何实现
                 NamesrvController.this.routeInfoManager.scanNotActiveBroker();
             }
         }, 5, 10, TimeUnit.SECONDS);
